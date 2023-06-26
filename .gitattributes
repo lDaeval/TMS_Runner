@@ -1,0 +1,36 @@
+#Defines
+[attr]lfs filter=lfs diff=lfs merge=binary -text
+[attr]lfstext filter=lfs diff=lfstext merge=text -text
+# Auto detect text files and perform LF normalization
+* text=auto
+# UE file types
+*.uasset lfs
+*.umap lfs
+*.udk lfs
+*.upk lfs
+# Anything in `/RawContent` dir. [You create this directory in your projects root folder]
+/RawContent/**/* lfs
+# Raw Content types
+*.blend lfs
+*.duf lfs
+*.bin.fbx lfs
+*.fbx lfs
+*.obj lfs
+*.png lfs
+*.jpg lfs
+*.jpeg lfs
+*.hdr lfs
+*.exr lfs
+*.mp3 lfs
+*.mp4 lfs
+*.mov lfs
+*.wav lfs
+*.3ds lfs
+*.psd lfs
+*.mb lfs
+*.tga lfs
+*.cubemap lfs
+*.tif lfs
+*.tiff lfs
+*.xcf lfs
+*.exe lfs
