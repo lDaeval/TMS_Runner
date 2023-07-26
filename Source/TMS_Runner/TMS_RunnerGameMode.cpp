@@ -6,4 +6,5 @@
 
 ATMS_RunnerGameMode::ATMS_RunnerGameMode()
 {
+	bUseSeamlessTravel = true;
 }

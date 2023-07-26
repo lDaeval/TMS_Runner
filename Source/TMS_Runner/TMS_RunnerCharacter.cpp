@@ -45,6 +45,27 @@ ATMS_RunnerCharacter::ATMS_RunnerCharacter(const FObjectInitializer& ObjectIniti
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
 }
 
+ESwipeDirection ATMS_RunnerCharacter::FindSwipeDirection(const FVector2D Direction)
+{
+	int OrthogonalDirection = 0;
+	float ValueXY = Direction.X;
+	if(FMath::Abs(Direction.X) < FMath::Abs(Direction.Y))
+	{
+		OrthogonalDirection = 1;
+		ValueXY = Direction.Y;
+	}
+
+	int SignDirection = 0;
+	if(ValueXY < 0)
+	{
+		SignDirection = 1;
+	}
+
+	const ESwipeDirection SwipeDirection = static_cast<ESwipeDirection>((OrthogonalDirection << 1) + SignDirection);
+
+	return SwipeDirection;
+}
+
 void ATMS_RunnerCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
@@ -72,8 +93,8 @@ void ATMS_RunnerCharacter::SetupPlayerInputComponent(class UInputComponent* Play
 	//PlayerInputComponent->BindAxis("MoveRight", this, &ATMS_RunnerCharacter::MoveRight);
 
 	// handle touch devices
-	PlayerInputComponent->BindTouch(IE_Pressed, this, &ATMS_RunnerCharacter::TouchStarted);
-	PlayerInputComponent->BindTouch(IE_Released, this, &ATMS_RunnerCharacter::TouchStopped);
+	// PlayerInputComponent->BindTouch(IE_Pressed, this, &ATMS_RunnerCharacter::TouchStarted);
+	// PlayerInputComponent->BindTouch(IE_Released, this, &ATMS_RunnerCharacter::TouchStopped);
 }
 
 

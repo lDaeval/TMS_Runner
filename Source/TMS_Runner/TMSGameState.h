@@ -6,6 +6,8 @@
 #include "GameFramework/GameStateBase.h"
 #include "TMSGameState.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGameValueChanged, int, NewValue);
+
 class UBonusComponent;
 
 UCLASS()
@@ -17,10 +19,12 @@ public:
 	// Sets default values for this actor's properties
 	ATMSGameState();
 
+	virtual void BeginPlay() override;
+	
 	virtual void Tick(float DeltaSeconds) override;
 	
 	UFUNCTION(BlueprintCallable)
-	void IncreaseCoinsCount() { Coins++; }
+	void IncreaseCoinsCount();
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	int GetCoinsCount() { return Coins; }
@@ -31,15 +35,18 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	int GetScore() { return Score; }
 
-protected:
-	virtual void AddPlayerState(APlayerState* PlayerState) override;
-
-	UFUNCTION()
-	void OnPawnChanged(APawn* OldPawn, APawn* NewPawn);
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	int GetBonusValue(EBonusType BonusType) const;
 	
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	float BonusDistance = 100.f;
+
+	UPROPERTY(Transient, BlueprintAssignable)
+	FGameValueChanged CoinsCountChanged;
+
+	UPROPERTY(Transient, BlueprintAssignable)
+	FGameValueChanged ScoreChanged;
 	
 private:
 	int Coins = 0;

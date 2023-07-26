@@ -7,15 +7,15 @@
 #include "Bonus.h"
 #include "BonusComponent.generated.h"
 
-
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FCollectedBonus
 {
 	GENERATED_BODY()
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	float BonusDuration = 1.f;
 
+	UPROPERTY(BlueprintReadOnly)
 	int Value = 1;
 
 	FTimerHandle ExpirationTime;
@@ -28,6 +28,9 @@ struct FCollectedBonus
 	}
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FBonusChanged, EBonusType, BonusType, const FCollectedBonus&, BonusInfo);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBonusExpiration, EBonusType, BonusType);
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class TMS_RUNNER_API UBonusComponent : public UActorComponent
 {
@@ -37,13 +40,18 @@ public:
 	// Sets default values for this component's properties
 	UBonusComponent();
 
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
 	UFUNCTION(BlueprintCallable)
 	void BonusCollected(const TScriptInterface<IBonus> Bonus);
 
 	int GetBonusValue(EBonusType Type) const;
 
+protected:
+	UPROPERTY(BlueprintAssignable)
+	FBonusChanged OnBonusAdded;
+
+	UPROPERTY(BlueprintAssignable)
+	FBonusExpiration OnBonusRemoved;
+	
 private:
 	TMap<EBonusType, FCollectedBonus> Bonuses;
 };

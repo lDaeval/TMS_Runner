@@ -6,6 +6,17 @@
 #include "GameFramework/Character.h"
 #include "TMS_RunnerCharacter.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDied);
+
+UENUM(BlueprintType)
+enum ESwipeDirection
+{
+	Left = 0, //0x0000
+	Right = 1,//0x0001
+	Up = 2,	  //0x0010
+	Down = 3, //0x0011
+};
+
 UCLASS(config=Game)
 class ATMS_RunnerCharacter : public ACharacter
 {
@@ -21,6 +32,9 @@ class ATMS_RunnerCharacter : public ACharacter
 public:
 	ATMS_RunnerCharacter(const FObjectInitializer& ObjectInitializer);
 
+	UFUNCTION(BlueprintPure)
+	ESwipeDirection FindSwipeDirection(FVector2D Direction);
+	
 	virtual void Tick(float DeltaSeconds) override;
 
 protected:
@@ -52,5 +66,8 @@ public:
 protected:
 	UPROPERTY(BlueprintReadWrite)
 	FVector ChangeTrailDirection = FVector::ZeroVector;
+
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FDied OnDied;
 };
 

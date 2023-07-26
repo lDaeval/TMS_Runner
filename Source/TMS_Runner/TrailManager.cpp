@@ -3,6 +3,7 @@
 
 #include "TrailManager.h"
 
+#include "TMSDebugSettings.h"
 #include "Algo/Accumulate.h"
 
 
@@ -16,6 +17,8 @@ UTrailManager::UTrailManager()
 // Called when the game starts
 void UTrailManager::BeginPlay()
 {
+	bShouldSpawnObstacles = GetDefault<UTMSDebugSettings>()->ShouldSpawnObstacles();
+	
 	const FString DTContext;
 	ObstaclesDT->GetAllRows(DTContext, Obstacles);
 
@@ -36,11 +39,11 @@ void UTrailManager::BeginPlay()
 
 FObstacleCombination UTrailManager::GetObstaclesSetup()
 {
-	return GetWeightedObject<FObstacleCombination>(Obstacles);
+	return *GenerateUniqueWeightedObject(Obstacles, SkippingObstacles);
 }
 
 FCollectablesCombination UTrailManager::GetCollectablesSetup()
 {
-	return GetWeightedObject<FCollectablesCombination>(Collectables);
+	return *GenerateUniqueWeightedObject(Collectables, SkippingCollectables);
 }
 

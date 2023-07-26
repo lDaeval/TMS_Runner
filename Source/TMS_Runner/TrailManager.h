@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CollectablesSpawner.h"
 #include "Components/ActorComponent.h"
 #include "Obstacle.h"
 #include "Algo/Accumulate.h"
@@ -33,6 +34,14 @@ struct FObstacleCombination : public FWeightedData
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	TSubclassOf<AObstacle> Right;
+
+	virtual bool operator==(const FObstacleCombination& Other)
+	{
+		return	Weight == Other.Weight	&&
+				Left == Other.Left		&&
+				Middle == Other.Middle	&&
+				Right == Other.Right;
+	}
 };
 
 USTRUCT(BlueprintType)
@@ -48,6 +57,14 @@ struct FCollectablesCombination : public FWeightedData
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	TSubclassOf<ACollectablesSpawner> Right;
+	
+	virtual bool operator==(const FCollectablesCombination& Other)
+	{
+		return	Weight == Other.Weight	&&
+				Left == Other.Left		&&
+				Middle == Other.Middle	&&
+				Right == Other.Right;
+	}
 };
 
 UCLASS(ClassGroup=(Custom), BlueprintType, Blueprintable, meta=(BlueprintSpawnableComponent))
@@ -63,9 +80,12 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-	template<class Object>
-	Object GetWeightedObject(TArray<Object*> Objects);
+	template<class TObject>
+	TObject* GetWeightedObject(TArray<TObject*> Objects);
 
+	template<class TObject>
+	TObject* GenerateUniqueWeightedObject(const TArray<TObject*> Objects, TArray<TObject*>& SkippingObjects);
+	
 	UFUNCTION(BlueprintCallable)
 	FObstacleCombination GetObstaclesSetup();
 
@@ -78,20 +98,29 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UDataTable> CollectablesDT = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	int TrailPeriod = 3;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bShouldSpawnObstacles = true;
 	
+private:
 	TArray<FObstacleCombination*> Obstacles;
+	TArray<FObstacleCombination*> SkippingObstacles;
 
 	TArray<FCollectablesCombination*> Collectables;
+	TArray<FCollectablesCombination*> SkippingCollectables;
 };
 
 template<class TObject>
-TObject UTrailManager::GetWeightedObject(TArray<TObject*> Objects)
+TObject* UTrailManager::GetWeightedObject(TArray<TObject*> Objects)
 {
 	static_assert(std::is_base_of_v<FWeightedData, TObject>);
 
 	if(Objects.Num() <= 0)
 	{
-		return TObject();
+		return nullptr;
 	}
 	
 	const float TotalWeight = Algo::Accumulate(Objects, 0.f, [](float Weight, const FWeightedData* Object)
@@ -117,5 +146,33 @@ TObject UTrailManager::GetWeightedObject(TArray<TObject*> Objects)
 		}
 	}
 	
-	return *Objects[Index];
+	return Objects[Index];
+}
+
+template<class TObject>
+TObject* UTrailManager::GenerateUniqueWeightedObject(const TArray<TObject*> Objects, TArray<TObject*>& SkippingObjects)
+{
+	TObject* GeneratedObject = GetWeightedObject<TObject>(Objects);
+
+	bool bIsUnique = false;
+	while (!bIsUnique)
+	{
+		if(SkippingObjects.Find(GeneratedObject) == INDEX_NONE)
+		{
+			bIsUnique = true;
+		}
+		else
+		{
+			GeneratedObject = GetWeightedObject<TObject>(Objects);
+		}
+	}
+
+	if(SkippingObjects.Num() == (TrailPeriod < Objects.Num() ? TrailPeriod : Objects.Num() - 1))
+	{
+		SkippingObjects.RemoveAtSwap(0);
+	}
+	
+	SkippingObjects.Add(GeneratedObject);
+	
+	return GeneratedObject;
 }
