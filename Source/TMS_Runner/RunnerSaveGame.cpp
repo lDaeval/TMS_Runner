@@ -7,11 +7,22 @@
 
 URunnerSaveGame::URunnerSaveGame()
 {
-	SaveGameData.Reserve(9);
+	SaveGameData.Reserve(SavesCount);
 	SaveSlotName = GetDefault<UTMS_GameSettings>()->GetSaveSlotName();
 }
 
 void URunnerSaveGame::AddNewSaveData(const FSaveGameData& NewSaveData)
 {
-	SaveGameData.Add(NewSaveData);
+	auto FindLast = [&NewSaveData](const FSaveGameData& SaveData)
+	{
+		return SaveData.TotalScore < NewSaveData.TotalScore;
+	};
+
+	const int Place = SaveGameData.FindLastByPredicate(FindLast);
+	SaveGameData.Insert(NewSaveData, Place);
+
+	if(SaveGameData.Num() > SavesCount)
+	{
+		SaveGameData.RemoveAt(SavesCount-1, SaveGameData.Num() - SavesCount);
+	}
 }

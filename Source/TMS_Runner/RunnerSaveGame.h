@@ -35,9 +35,12 @@ public:
 	FString GetSaveSlotName() const { return SaveSlotName; }
 	
 protected:
-	UPROPERTY(SaveGame, Transient, BlueprintReadOnly)
+	UPROPERTY(SaveGame, BlueprintReadOnly)
 	TArray<FSaveGameData> SaveGameData;
 
 	UPROPERTY(Transient, BlueprintReadOnly)
 	FString SaveSlotName = TEXT("");
+
+	UPROPERTY(Transient, BlueprintReadOnly)
+	int SavesCount = 9;
 };
